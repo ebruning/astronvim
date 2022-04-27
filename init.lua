@@ -39,7 +39,7 @@ local config = {
   -- Disable default plugins
   enabled = {
     bufferline = true,
-    neo_tree = false,
+    neo_tree = true,
     lualine = true,
     gitsigns = true,
     colorizer = true,
