@@ -222,40 +222,14 @@ local config = {
   end,
 
   lualine = {
-      sections = {
-        lualine_a = {
-          { "filename", file_status = true, path = 1, full_path = true, shorten = false },
-          -- { "mode", padding = { left = 1, right = 1 } },
-        },
-        lualine_b = {
-          "filetype",
-          { "branch", icon = "" },
-        },
-        lualine_c = {
-          { "diff", symbols = { added = " ", modified = "柳", removed = " " } },
-          { "diagnostics", sources = { "nvim_diagnostic" } },
-        },
-        lualine_x = {
-          status.lsp_progress,
-        },
-        lualine_y = {
-          { status.lsp_name, icon = " " },
-          status.treesitter_status,
-        },
-        lualine_z = {
-          { "progress" },
-          { "location" },
-        },
-      },
-      inactive_sections = {
-        lualine_a = {},
-        lualine_b = {},
-        lualine_c = {},
-        lualine_x = {},
-        lualine_y = {},
-        lualine_z = {},
-      },
+    options = {
+      disabled_filetypes = { "NvimTree", "neo-tree", "dashboard", "Outline" },
+      component_separators = "",
+      section_separators = "",
+      globalstatus = true,
     },
+    sections = {},
+  },
 
 
   -- This function is run last
