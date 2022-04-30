@@ -1,5 +1,3 @@
-local status = require "core.status"
-
 local with_root_file = function(builtin, file)
   return builtin.with {
     condition = function(utils)
@@ -39,7 +37,7 @@ local config = {
   -- Disable default plugins
   enabled = {
     bufferline = true,
-    neo_tree = false,
+    neo_tree = true,
     lualine = true,
     gitsigns = true,
     colorizer = true,
@@ -53,7 +51,6 @@ local config = {
     ts_rainbow = true,
     ts_autotag = true,
   },
-
   -- Disable AstroNvim ui features
   ui = {
     nui_input = true,
@@ -103,6 +100,7 @@ local config = {
       compile_path = vim.fn.stdpath "config" .. "/lua/packer_compiled.lua",
     },
   },
+
 
   -- Add paths for including more VS Code style snippets in luasnip
   luasnip = {
@@ -220,16 +218,6 @@ local config = {
       end,
     }
   end,
-
-  lualine = {
-    options = {
-      disabled_filetypes = { "NvimTree", "neo-tree", "dashboard", "Outline" },
-      component_separators = "",
-      section_separators = "",
-      globalstatus = true,
-    },
-    sections = {},
-  },
 
 
   -- This function is run last
