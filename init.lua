@@ -1,5 +1,3 @@
-require('orgmode').setup_ts_grammar()
-
 local with_root_file = function(builtin, file)
   return builtin.with {
     condition = function(utils)
@@ -77,28 +75,21 @@ local config = {
       { "ellisonleao/gruvbox.nvim" },
       -- { "eddyekofo94/gruvbox-flat.nvim" },
       { "folke/zen-mode.nvim",
-            config = function()
-              require("zen-mode").setup {
-      -- your configuration comes here
-      -- or leave it empty to use the default settings
-      -- refer to the configuration section below
-              }
-            end
+          config = function()
+            require("zen-mode").setup {}
+          end
       },
       {
         "folke/twilight.nvim",
-        config = function()
-          require("twilight").setup {
-            -- your configuration comes here
-            -- or leave it empty to use the default settings
-            -- refer to the configuration section below
-          }
-        end
+          config = function()
+            require("twilight").setup {}
+          end
       },
       { 'nvim-orgmode/orgmode',
-            config = function()
-              require('orgmode').setup{}
-            end
+          config = function()
+            -- require('orgmode').setup{}
+            require('orgmode').setup_ts_grammar()
+          end
       },
     },
     -- All other entries override the setup() call for default plugins
