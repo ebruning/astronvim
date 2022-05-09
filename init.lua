@@ -15,7 +15,8 @@ end
 local config = {
 
   -- Set colorscheme
-  colorscheme = "onedark",
+  colorscheme = "gruvbox",
+  -- colorscheme = "onedark",
   -- colorscheme = "default_theme",
 
   -- Default theme configuration
@@ -69,9 +70,10 @@ local config = {
       --     require("lsp_signature").setup()
       --   end,
       -- },
+      { 'vimwiki/vimwiki' },
       { 'ful1e5/onedark.nvim' },
       { "ellisonleao/gruvbox.nvim" },
-      { "eddyekofo94/gruvbox-flat.nvim" },
+      -- { "eddyekofo94/gruvbox-flat.nvim" },
       { "folke/zen-mode.nvim",
             config = function()
               require("zen-mode").setup {
