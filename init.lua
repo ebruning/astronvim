@@ -1,3 +1,5 @@
+require('orgmode').setup_ts_grammar()
+
 local with_root_file = function(builtin, file)
   return builtin.with {
     condition = function(utils)
@@ -92,6 +94,11 @@ local config = {
             -- refer to the configuration section below
           }
         end
+      },
+      { 'nvim-orgmode/orgmode',
+            config = function()
+              require('orgmode').setup{}
+            end
       },
     },
     -- All other entries override the setup() call for default plugins
@@ -258,5 +265,3 @@ local config = {
 }
 
 return config
-
-
