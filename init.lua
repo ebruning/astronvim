@@ -1,18 +1,20 @@
-local with_root_file = function(builtin, file)
-  return builtin.with {
-    condition = function(utils)
-      return utils.root_has_file(file)
-    end,
-  }
-end
-
-local with_diagnostics_code = function(builtin)
-  return builtin.with {
-    diagnostics_format = "#{m} [#{c}]",
-  }
-end
-
 local config = {
+  -- Configure AstroNvim updates
+  updater = {
+    remote = "origin", -- remote to use
+    channel = "nightly", -- "stable" or "nightly"
+    version = "latest", -- "latest", tag name, or regex search like "v1.*" to only do updates before v2 (STABLE ONLY)
+    branch = "main", -- branch name (NIGHTLY ONLY)
+    commit = nil, -- commit hash (NIGHTLY ONLY)
+    pin_plugins = nil, -- nil, true, false (nil will pin plugins on stable only)
+    skip_prompts = false, -- skip prompts about breaking changes
+    show_changelog = true, -- show the changelog after performing an update
+    -- remotes = { -- easily add new remotes to track
+    --   ["remote_name"] = "https://remote_url.come/repo.git", -- full remote url
+    --   ["remote2"] = "github_user/repo", -- GitHub user/repo shortcut,
+    --   ["remote3"] = "github_user", -- GitHub user assume AstroNvim fork
+    -- },
+  },
 
   -- Configure AstroNvim updates
   updater = {
@@ -32,9 +34,19 @@ local config = {
   },
 
   -- Set colorscheme
-  colorscheme = "gruvbox",
-  -- colorscheme = "onedark",
   -- colorscheme = "default_theme",
+  colorscheme = "gruvbox",
+
+  -- set vim options here (vim.<first_key>.<second_key> =  value)
+  options = {
+    opt = {
+      relativenumber = false, -- sets vim.opt.relativenumber
+      cursorline = false,
+    },
+    g = {
+      mapleader = " ", -- sets vim.g.mapleader
+    },
+  },
 
   -- Default theme configuration
   default_theme = {
@@ -50,25 +62,27 @@ local config = {
       highlights.Normal = { fg = C.fg, bg = C.bg }
       return highlights
     end,
+    plugins = { -- enable or disable extra plugin highlighting
+      aerial = true,
+      beacon = false,
+      bufferline = true,
+      dashboard = true,
+      highlighturl = true,
+      hop = false,
+      indent_blankline = true,
+      lightspeed = false,
+      ["neo-tree"] = true,
+      notify = true,
+      ["nvim-tree"] = false,
+      ["nvim-web-devicons"] = true,
+      rainbow = true,
+      symbols_outline = false,
+      telescope = true,
+      vimwiki = false,
+      ["which-key"] = true,
+    },
   },
 
-  -- Disable default plugins
-  enabled = {
-    bufferline = true,
-    neo_tree = true,
-    lualine = true,
-    gitsigns = true,
-    colorizer = true,
-    toggle_term = true,
-    comment = true,
-    symbols_outline = true,
-    indent_blankline = true,
-    dashboard = true,
-    which_key = true,
-    neoscroll = true,
-    ts_rainbow = true,
-    ts_autotag = true,
-  },
   -- Disable AstroNvim ui features
   ui = {
     nui_input = true,
@@ -79,14 +93,6 @@ local config = {
   plugins = {
     -- Add plugins, the packer syntax without the "use"
     init = {
-      -- { "andweeb/presence.nvim" },
-      -- {
-      --   "ray-x/lsp_signature.nvim",
-      --   event = "BufRead",
-      --   config = function()
-      --     require("lsp_signature").setup()
-      --   end,
-      -- },
       { 'vimwiki/vimwiki' },
       { 'ful1e5/onedark.nvim' },
       { "ellisonleao/gruvbox.nvim" },
@@ -116,10 +122,47 @@ local config = {
           "nvim-telescope/telescope.nvim"
         }
       },
+      { 'ldelossa/litee.nvim',
+          config = function()
+            require('litee.lib').setup({})
+          end
+      },
+      { 'ldelossa/litee-symboltree.nvim',
+          config = function()
+            require('litee.symboltree').setup({})
+          end
+      },
     },
     -- All other entries override the setup() call for default plugins
+    ["null-ls"] = function(config)
+      local null_ls = require "null-ls"
+      -- Check supported formatters and linters
+      -- https://github.com/jose-elias-alvarez/null-ls.nvim/tree/main/lua/null-ls/builtins/formatting
+      -- https://github.com/jose-elias-alvarez/null-ls.nvim/tree/main/lua/null-ls/builtins/diagnostics
+      config.sources = {
+        -- Set a formatter
+        null_ls.builtins.formatting.rufo,
+        -- Set a linter
+        null_ls.builtins.diagnostics.rubocop,
+      }
+      -- set up null-ls's on_attach function
+      config.on_attach = function(client)
+        -- NOTE: You can remove this on attach function to disable format on save
+        if client.resolved_capabilities.document_formatting then
+          vim.api.nvim_create_autocmd("BufWritePre", {
+            desc = "Auto format before save",
+            pattern = "<buffer>",
+            callback = vim.lsp.buf.formatting_sync,
+          })
+        end
+      end
+      return config -- return final config table
+    end,
     treesitter = {
       ensure_installed = { "lua" },
+    },
+    ["nvim-lsp-installer"] = {
+      ensure_installed = { "sumneko_lua" },
     },
     packer = {
       compile_path = vim.fn.stdpath "config" .. "/lua/packer_compiled.lua",
@@ -127,15 +170,102 @@ local config = {
   },
 
   -- Add paths for including more VS Code style snippets in luasnip
+  -- LuaSnip Options
   luasnip = {
+    -- Add paths for including more VS Code style snippets in luasnip
     vscode_snippet_paths = {},
+    -- Extend filetypes
+    filetype_extend = {
+      javascript = { "javascriptreact" },
+    },
   },
+
+  --  status line
+  -- feline = {
+  --   disable = { filetypes = { "^NvimTree$", "^neo%-tree$", "^dashboard$", "^Outline$", "^aerial$" } },
+  --   theme = {
+  --     fg = status.get_hl_prop("Feline", "foreground", colors.fg),
+  --     bg = status.get_hl_prop("Feline", "background", colors.bg_1),
+  --   },
+  --   components = {
+  --     active = {
+  --       {
+  --         status.colored_spacer(1),
+  --         status.spacer(2),
+  --         {
+  --           provider = "git_branch",
+  --           hl = status.fg_hl(colors.purple_1, "Conditional", "foreground", { style = "bold" }),
+  --           icon = " ",
+  --         },
+  --         status.spacer(3, status.git_head_available),
+  --         {
+  --           provider = { name = "file_type", opts = { filetype_icon = true, case = "lowercase" } },
+  --           enabled = status.filetype_available,
+  --         },
+  --         status.spacer(2, status.filetype_available),
+  --         { provider = "git_diff_added", hl = status.fg_hl(colors.green, "GitSignsAdd"), icon = "  " },
+  --         { provider = "git_diff_changed", hl = status.fg_hl(colors.orange_1, "GitSignsChange"), icon = " 柳" },
+  --         { provider = "git_diff_removed", hl = status.fg_hl(colors.red_1, "GitSignsDelete"), icon = "  " },
+  --         status.spacer(2, status.git_changed),
+  --         {
+  --           provider = "diagnostic_errors",
+  --           enabled = status.diagnostic_exists "ERROR",
+  --           hl = status.fg_hl(colors.red_1, "DiagnosticError"),
+  --           icon = "  ",
+  --         },
+  --         {
+  --           provider = "diagnostic_warnings",
+  --           enabled = status.diagnostic_exists "WARN",
+  --           hl = status.fg_hl(colors.orange_1, "DiagnosticWarn"),
+  --           icon = "  ",
+  --         },
+  --         {
+  --           provider = "diagnostic_info",
+  --           enabled = status.diagnostic_exists "INFO",
+  --           hl = status.fg_hl(colors.white_2, "DiagnosticInfo"),
+  --           icon = "  ",
+  --         },
+  --         {
+  --           provider = "diagnostic_hints",
+  --           enabled = status.diagnostic_exists "HINT",
+  --           hl = status.fg_hl(colors.yellow_1, "DiagnosticHint"),
+  --           icon = "  ",
+  --         },
+  --       },
+  --       {
+  --         { provider = status.lsp_progress, hl = { gui = "none" }, enabled = status.hide_in_width },
+  --         { provider = "lsp_client_names", hl = { gui = "none" }, icon = "   ", enabled = status.hide_in_width },
+  --         status.spacer(2, status.hide_in_width),
+  --         {
+  --           provider = status.treesitter_status,
+  --           hl = status.fg_hl(colors.green, "GitSignsAdd"),
+  --           enabled = status.hide_in_width,
+  --         },
+  --         status.spacer(2),
+  --         { provider = "position" },
+  --         status.spacer(2),
+  --         { provider = "line_percentage" },
+  --         status.spacer(1),
+  --         { provider = "scroll_bar", hl = status.fg_hl(colors.yellow, "TypeDef") },
+  --         status.spacer(2),
+  --         status.colored_spacer(1),
+  --       },
+  --     },
+  --   },
+  -- },
 
   -- Modify which-key registration
   ["which-key"] = {
-    -- Add bindings to the normal mode <leader> mappings
-    register_n_leader = {
-      -- ["N"] = { "<cmd>tabnew<cr>", "New Buffer" },
+    -- Add bindings
+    register_mappings = {
+      -- first key is the mode, n == normal mode
+      n = {
+        -- second key is the prefix, <leader> prefixes
+        ["<leader>"] = {
+          -- which-key registration table for normal mode, leader prefix
+          -- ["N"] = { "<cmd>tabnew<cr>", "New Buffer" },
+        },
+      },
     },
   },
 
@@ -156,14 +286,18 @@ local config = {
 
   -- Extend LSP configuration
   lsp = {
+    -- enable servers that you already have installed without lsp-installer
+    servers = {
+      -- "pyright"
+    },
     -- add to the server on_attach function
     -- on_attach = function(client, bufnr)
     -- end,
 
     -- override the lsp installer server-registration function
     -- server_registration = function(server, opts)
-    --   server:setup(opts)
-    -- end
+    --   require("lspconfig")[server].setup(opts)
+    -- end,
 
     -- Add overrides for LSP server settings, the keys are the name of the server
     ["server-settings"] = {
@@ -188,75 +322,14 @@ local config = {
     underline = true,
   },
 
-  -- null-ls configuration
-  ["null-ls"] = function()
-    -- Formatting and linting
-    -- https://github.com/jose-elias-alvarez/null-ls.nvim
-    local status_ok, null_ls = pcall(require, "null-ls")
-    if not status_ok then
-      return
-    end
-
-    -- Check supported formatters
-    -- https://github.com/jose-elias-alvarez/null-ls.nvim/tree/main/lua/null-ls/builtins/formatting
-    local formatting = null_ls.builtins.formatting
-
-    -- Check supported linters
-    -- https://github.com/jose-elias-alvarez/null-ls.nvim/tree/main/lua/null-ls/builtins/diagnostics
-    local diagnostics = null_ls.builtins.diagnostics
-
-    null_ls.setup {
-      debug = false,
-      sources = {
-        -- Set a formatter
-        -- formatting.rufo,
-        formatting.rubocop,
-        formatting.black.with { extra_args = { "--fast" } },  -- Python
-        formatting.prettierd,                                 -- javascript, json, css, html, markdown
-        formatting.shfmt,                                     -- shellscripts
-        formatting.fixjson,                                   -- json
-        with_root_file(formatting.stylua, "stylua.toml"),     -- lua
-        -- formatting.solargraph,
-
-        -- Set a linter
-        diagnostics.rubocop,
-        diagnostics.flake8,
-        diagnostics.write_good,
-        -- diagnostics.markdownlint,
-        -- diagnostics.eslint_d,
-        diagnostics.flake8,
-        diagnostics.tsc,
-        with_root_file(diagnostics.selene, "selene.toml"),
-        with_diagnostics_code(diagnostics.shellcheck),
-        -- diagnostics.solargraph,
-      },
-      -- NOTE: You can remove this on attach function to disable format on save
-      on_attach = function(client)
-        if client.resolved_capabilities.document_formatting then
-          vim.api.nvim_create_autocmd("BufWritePre", {
-            desc = "Auto format before save",
-            pattern = "<buffer>",
-            callback = vim.lsp.buf.formatting_sync,
-          })
-        end
-      end,
-    }
-  end,
-
-
   -- This function is run last
   -- good place to configure mappings and vim options
   polish = function()
-    local map = vim.keymap.set
-    local set = vim.opt
-    -- Set options
-    set.relativenumber = true
-    set.cursorline = false
     -- Set key bindings
-    map("n", "<C-s>", ":w!<CR>")
+    vim.keymap.set("n", "<C-s>", ":w!<CR>")
 
     -- Set autocommands
-    vim.api.nvim_create_augroup("packer_conf", {})
+    vim.api.nvim_create_augroup("packer_conf", { clear = true })
     vim.api.nvim_create_autocmd("BufWritePost", {
       desc = "Sync packer after modifying plugins.lua",
       group = "packer_conf",
