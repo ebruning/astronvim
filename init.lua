@@ -114,8 +114,8 @@ local config = {
             require('orgmode').setup_ts_grammar()
           end
       },
-      { 
-        'tami5/xbase', 
+      {
+        'tami5/xbase',
         run = 'make install',
         requires = {
           "nvim-lua/plenary.nvim",
